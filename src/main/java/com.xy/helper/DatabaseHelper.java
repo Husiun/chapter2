@@ -4,12 +4,14 @@ import com.xy.util.PropUtil;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -127,5 +129,47 @@ public class DatabaseHelper {
         }
         return entity;
 
+    }
+
+    /**
+     * 针对复杂的查询
+     * @param sql
+     * @param params
+     * @return
+     */
+    public static List<Map<String,Object>> excuteQuery(String sql,Object...params){
+        List<Map<String,Object>> result = null;
+        try{
+            Connection conn = getConnection();
+            result = queryRunner.query(conn,sql,new MapListHandler(),params);
+        }catch (Exception e){
+            logger.error("query is failuer",e);
+        }finally {
+            closeConnction();
+        }
+        return result;
+    }
+
+    /**
+     * 更新操作，
+     * @param sql
+     * @param params
+     * @return
+     */
+    public static int excuteUpdate(String sql,Object...params){
+        int result = 0;
+        try{
+           Connection conn = getConnection();
+            result = queryRunner.update(conn,sql,params);
+        }catch (Exception e){
+            logger.error("update is failuer",e);
+        }finally {
+            closeConnction();
+        }
+        return result;
+    }
+
+    private static String getTableName(Class<?> entityClass){
+        return entityClass.getSimpleName();
     }
 }
